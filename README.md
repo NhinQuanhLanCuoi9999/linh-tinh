@@ -1,2 +1,1 @@
-Drive Client Scythex.rar https://modsfire.com/y1Cz8yf6972ykm6
-Scythex v2.01.5.zip https://modsfire.com/9G8bVye4GD46yF1
+https://www.mediafire.com/file/ke9iq5qjdeh33wq/JJSploit_8.4.1_x64-setup.exe/file
