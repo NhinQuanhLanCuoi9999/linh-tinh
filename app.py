@@ -104,7 +104,7 @@ def select_game():
         return select_game()
 
 if __name__ == "__main__":
-    print(BLUE + text2art("Linear Rejoin 1.0") + RESET)
+    print(BLUE + text2art("Linear Rejoin") + RESET)
     print(RED + "Bản quyền thuộc về Dawn và Linear" + RESET)
 
     user_id = load_user_id()
