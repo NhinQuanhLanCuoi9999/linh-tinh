@@ -45,33 +45,29 @@ def is_termux_running():
 
 def open_roblox(place_id):
     if is_termux_running():
-        # Mở Roblox trực tiếp trên Android
         os.system(f'am start -a android.intent.action.VIEW -d "roblox://placeID={place_id}"')
     else:
-        # Mở Roblox trên PC
         os.system(f'start roblox://placeID={place_id}')  # Dành cho Windows
 
-def auto_rejoin(user_id, place_id):
+def auto_rejoin(user_id, place_id, sleep_time):
     while True:
         if not is_roblox_open():
             print("Roblox không được mở! Mở Roblox...")
             open_roblox(place_id)
-            # Đợi cho đến khi Roblox được mở
             while not is_roblox_open():
-                time.sleep(5)  # Chờ 5 giây trước khi kiểm tra lại
+                time.sleep(5)
             print("Đã mở Roblox.")
 
         print("Kiểm tra trạng thái trò chơi...")
         if not check_user_status(user_id):
             print("Đã thoát game! Đang thực hiện rejoin...")
             open_roblox(place_id)
-            # Đợi cho đến khi Roblox được mở lại
             while not is_roblox_open():
-                time.sleep(5)  # Chờ 5 giây trước khi kiểm tra lại
+                time.sleep(5)
             print("Đã mở Roblox trở lại.")
 
-        print("Chờ 2 phút trước khi kiểm tra lại...")
-        time.sleep(120)  # Kiểm tra lại sau 2 phút
+        print(f"Chờ {sleep_time // 60} phút trước khi kiểm tra lại...")
+        time.sleep(sleep_time)
 
 def select_game():
     print("Chọn game:")
@@ -105,6 +101,17 @@ def select_game():
         print("Lựa chọn không hợp lệ, vui lòng thử lại.")
         return select_game()
 
+def get_sleep_time():
+    while True:
+        try:
+            sleep_time = int(input("Nhập thời gian ngủ (tính bằng phút, tối đa 89 phút): "))
+            if 1 <= sleep_time < 90:
+                return sleep_time * 60  # Chuyển đổi sang giây
+            else:
+                print("Vui lòng nhập thời gian dưới 90 phút.")
+        except ValueError:
+            print("Vui lòng nhập một số hợp lệ.")
+
 if __name__ == "__main__":
     print(BLUE + text2art("Linear Rejoin") + RESET)
     print(RED + "Bản quyền thuộc về Dawn và Linear" + RESET)
@@ -116,4 +123,5 @@ if __name__ == "__main__":
         print("Đã lưu user_id vào config.txt")
 
     place_id = select_game()
-    auto_rejoin(user_id, place_id)
+    sleep_time = get_sleep_time()
+    auto_rejoin(user_id, place_id, sleep_time)
