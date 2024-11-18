@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Demo</title>
+</head>
+<body>
+  <h1>Thông tin từ Server:</h1>
+  <div id="response">Chưa có dữ liệu từ server.</div>
+
+  <script>
+    // Kết nối WebSocket tới server
+    const socket = new WebSocket('ws://localhost:3000');
+
+    socket.onopen = () => {
+      console.log('Đã kết nối đến server');
+    };
+
+    // Khi nhận được thông tin từ server, hiển thị lên giao diện
+    socket.onmessage = (event) => {
+      document.getElementById('response').textContent = event.data;
+    };
+
+    socket.onerror = (error) => {
+      console.log('Lỗi WebSocket:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket kết thúc kết nối');
+    };
+  </script>
+</body>
+</html>
